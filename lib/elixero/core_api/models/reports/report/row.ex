@@ -5,10 +5,10 @@ defmodule EliXero.CoreApi.Models.Reports.Report.Row do
   @derive {Poison.Encoder, except: [:__meta__, :id]}
 
   schema "rows" do
-    field :RowType, :string
-    embeds_many :Cells, EliXero.CoreApi.Models.Reports.Report.Rows.Cell
-    field :Title, :string
-    embeds_many :Rows, EliXero.CoreApi.Models.Reports.Report.Row
+    field(:RowType, :string)
+    embeds_many(:Cells, EliXero.CoreApi.Models.Reports.Report.Rows.Cell)
+    field(:Title, :string)
+    embeds_many(:Rows, EliXero.CoreApi.Models.Reports.Report.Row)
   end
 
   def changeset(struct, data) do
@@ -18,4 +18,3 @@ defmodule EliXero.CoreApi.Models.Reports.Report.Row do
     |> cast_embed(:Rows)
   end
 end
-

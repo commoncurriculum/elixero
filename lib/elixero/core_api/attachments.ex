@@ -21,10 +21,36 @@ defmodule EliXero.CoreApi.Attachments do
     resource = endpoint <> "/" <> identifier <> "/" <> @resource
 
     case client.app_type do
-      :private -> EliXero.Private.upload_attachment(client.access_token, resource, @api_type, file_path, filename, include_online)
-      :public -> EliXero.Public.upload_attachment(client.access_token, resource, @api_type, file_path, filename, include_online)
-      :partner -> EliXero.Partner.upload_attachment(client.access_token, resource, @api_type, file_path, filename, include_online)
-    end |> EliXero.CoreApi.Utils.ResponseHandler.handle_response(@model_module) 
-    
+      :private ->
+        EliXero.Private.upload_attachment(
+          client.access_token,
+          resource,
+          @api_type,
+          file_path,
+          filename,
+          include_online
+        )
+
+      :public ->
+        EliXero.Public.upload_attachment(
+          client.access_token,
+          resource,
+          @api_type,
+          file_path,
+          filename,
+          include_online
+        )
+
+      :partner ->
+        EliXero.Partner.upload_attachment(
+          client.access_token,
+          resource,
+          @api_type,
+          file_path,
+          filename,
+          include_online
+        )
+    end
+    |> EliXero.CoreApi.Utils.ResponseHandler.handle_response(@model_module)
   end
 end

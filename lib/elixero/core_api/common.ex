@@ -9,7 +9,7 @@ defmodule EliXero.CoreApi.Common do
     end
   end
 
-  def find(client, resource,  identifier) do
+  def find(client, resource, identifier) do
     resource = resource <> "/" <> identifier
 
     find(client, resource)
@@ -18,17 +18,40 @@ defmodule EliXero.CoreApi.Common do
   def filter(client, resource, filter) do
     query_filters = filter[:query_filters]
 
-    extra_headers = 
+    extra_headers =
       unless filter[:modified_since] == nil do
-        [ {"if-modified-since", filter[:modified_since]} ] 
+        [{"if-modified-since", filter[:modified_since]}]
       else
         []
-      end      
+      end
 
     case client.app_type do
-      :private -> EliXero.Private.find(client.access_token, resource, @api_type, query_filters, extra_headers)
-      :public -> EliXero.Public.find(client.access_token, resource, @api_type, query_filters, extra_headers)
-      :partner -> EliXero.Partner.find(client.access_token, resource, @api_type, query_filters, extra_headers)
+      :private ->
+        EliXero.Private.find(
+          client.access_token,
+          resource,
+          @api_type,
+          query_filters,
+          extra_headers
+        )
+
+      :public ->
+        EliXero.Public.find(
+          client.access_token,
+          resource,
+          @api_type,
+          query_filters,
+          extra_headers
+        )
+
+      :partner ->
+        EliXero.Partner.find(
+          client.access_token,
+          resource,
+          @api_type,
+          query_filters,
+          extra_headers
+        )
     end
   end
 

@@ -20,7 +20,7 @@ defmodule EliXero.CoreApi.Overpayments do
 
   def allocate_overpayment(client, identifier, allocations_map) do
     resource = @resource <> "/" <> identifier <> "/allocations"
-    
+
     EliXero.CoreApi.Common.create(client, resource, allocations_map)
     |> EliXero.CoreApi.Utils.ResponseHandler.handle_response(@allocations_model_module)
   end

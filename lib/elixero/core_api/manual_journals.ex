@@ -1,6 +1,6 @@
 defmodule EliXero.CoreApi.ManualJournals do
   @resource "manualjournals"
-  @model_module EliXero.CoreApi.Models.ManualJournals  
+  @model_module EliXero.CoreApi.Models.ManualJournals
 
   def find(client) do
     EliXero.CoreApi.Common.find(client, @resource)

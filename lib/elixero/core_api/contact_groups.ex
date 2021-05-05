@@ -37,7 +37,7 @@ defmodule EliXero.CoreApi.ContactGroups do
       :public -> EliXero.Public.create(client.access_token, resource, @api_type, contacts_map)
       :partner -> EliXero.Partner.create(client.access_token, resource, @api_type, contacts_map)
     end
-    |> EliXero.CoreApi.Utils.ResponseHandler.handle_response(@contacts_model_module)    
+    |> EliXero.CoreApi.Utils.ResponseHandler.handle_response(@contacts_model_module)
   end
 
   def remove_contact(client, contact_group_identifier, contact_identifier) do
@@ -48,7 +48,7 @@ defmodule EliXero.CoreApi.ContactGroups do
       :public -> EliXero.Public.delete(client.access_token, resource, @api_type)
       :partner -> EliXero.Partner.delete(client.access_token, resource, @api_type)
     end
-    |> EliXero.CoreApi.Utils.ResponseHandler.handle_response(@model_module)  
+    |> EliXero.CoreApi.Utils.ResponseHandler.handle_response(@model_module)
   end
 
   def remove_all_contacts(client, identifier) do
@@ -59,6 +59,6 @@ defmodule EliXero.CoreApi.ContactGroups do
       :public -> EliXero.Public.delete(client.access_token, resource, @api_type)
       :partner -> EliXero.Partner.delete(client.access_token, resource, @api_type)
     end
-    |> EliXero.CoreApi.Utils.ResponseHandler.handle_response(@model_module)  
+    |> EliXero.CoreApi.Utils.ResponseHandler.handle_response(@model_module)
   end
 end

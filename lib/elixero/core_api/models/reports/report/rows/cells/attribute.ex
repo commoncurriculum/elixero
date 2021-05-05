@@ -5,8 +5,8 @@ defmodule EliXero.CoreApi.Models.Reports.Report.Rows.Cell.Attribute do
   @derive {Poison.Encoder, except: [:__meta__, :id]}
 
   schema "attributes" do
-    field :Value, :string
-    field :Id, :string
+    field(:Value, :string)
+    field(:Id, :string)
   end
 
   def changeset(struct, data) do
