@@ -13,7 +13,7 @@ defmodule EliXero.Mixfile do
   end
 
   def application do
-    [applications: [:logger, :httpoison, :poison]]
+    [applications: [:logger, :httpoison, :poison, :ecto]]
   end
 
   defp deps do
