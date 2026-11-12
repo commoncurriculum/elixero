@@ -1,15 +1,15 @@
-# EliXero
+# XeroXero
 
 ## Usage instructions
 
 In order to use this SDK, you will need to have created an application in the [developer portal](https://app.xero.com).
 Once you've created your application you'll a config section that stores your consumer key and secret as well as signing certificate information if applicable, as well as some other details.
 
-As the config section will hold sensitive data, it's recommended that you create a seperate config file which is not stored in version control, and then import the new config file into your applications overall config file.  
+As the config section will hold sensitive data, it's recommended that you create a seperate config file which is not stored in version control, and then import the new config file into your applications overall config file.
 The config section will need to look something like this:
 
 ```
-config :elixero,
+config :xeroxero,
   private_key_path: "path_to_signing_certificate",
   consumer_key: "your_applications_consumer_key",
   consumer_secret: "your_applications_consumer_secret",
@@ -19,7 +19,7 @@ config :elixero,
 
 Note:
 * private_key_path is only applicable for private/partner applications. The path should be pointing to the .pem certificate that correlates with the certificate uploaded into the developer portal
-* callback_url is only applicable for public/partner applications and used when authorising a request token to call back into your system after authorization to prevent the user from needing to manually input a verification code. This should be set to "oob" if you are not using a callback url 
+* callback_url is only applicable for public/partner applications and used when authorising a request token to call back into your system after authorization to prevent the user from needing to manually input a verification code. This should be set to "oob" if you are not using a callback url
 * app type should be either :private, :public, or :partner depending on the type of application you have created
 
 ### Private application usage
@@ -37,12 +37,12 @@ Once you have set up your config file you can use your private application like 
 
 1. Create a client
   ```
-  client = EliXero.create_client
+  client = XeroXero.create_client
   ```
 
 2. Use the client when calling the Xero API
   ```
-  EliXero.CoreApi.Invoices.find client
+  XeroXero.CoreApi.Invoices.find client
   ```
 
 It's that easy.
@@ -62,7 +62,7 @@ Once you have set up your config file you can use your public application like s
 
 1. Acquire a request token
   ```
-  request_token = EliXero.get_request_token
+  request_token = XeroXero.get_request_token
   ```
 
 2. Authorise the request token via user interaction
@@ -73,12 +73,12 @@ Once you have set up your config file you can use your public application like s
 
 Once the user has authorised the connection to an organisation and you have retrieved the verification code either from the user themself or the request back into your callback url, do the following:
   ```
-  client = EliXero.create_client request_token, "VERIFICATION CODE"
+  client = XeroXero.create_client request_token, "VERIFICATION CODE"
   ```
 
 4. Use the client when calling the Xero API
   ```
-  EliXero.CoreApi.Invoices.find client
+  XeroXero.CoreApi.Invoices.find client
   ```
 
 ### Partner application usage
@@ -97,7 +97,7 @@ Once you have set up your config file you can use your partner application like 
 
 1. Acquire a request token
   ```
-  request_token = EliXero.get_request_token
+  request_token = XeroXero.get_request_token
   ```
 
 2. Authorise the request token via user interaction
@@ -108,25 +108,25 @@ Once you have set up your config file you can use your partner application like 
 
 Once the user has authorised the connection to an organisation and you have retrieved the verification code either from the user themself or the request back into your callback url, do the following:
   ```
-  client = EliXero.create_client request_token, "VERIFICATION CODE"
+  client = XeroXero.create_client request_token, "VERIFICATION CODE"
   ```
 
 4. Use the client when calling the Xero API
   ```
-  EliXero.CoreApi.Invoices.find client
+  XeroXero.CoreApi.Invoices.find client
   ```
 
 After your access token has expired, partner applications can renew them without the need for user input via authorisation.
 Given your existing access token is in a variable named access_token, this can be done like so:
 ```
-renewed_client = EliXero.renew_client client
+renewed_client = XeroXero.renew_client client
 ```
 
 Note: Renewing a client renews the underlying access token. The original client cannot be used after renewing it.
 
 ## Use of filter functions
 
-Some endpoints allow various filter methods when retrieving information from the Xero API. 
+Some endpoints allow various filter methods when retrieving information from the Xero API.
 All filtering, with the exception of if-modified-since, is performed via query parameters. If-modified-since is done via a header.
 
 When using filtering, a map outlining what filtering you want needs to be supplied.
@@ -136,7 +136,7 @@ Below is an example on how to do this when you want to retrieve all DRAFT, ACCRE
 ```
 filter = %{:query_filters => [{"where", "Status==\"DRAFT\" AND Type==\"ACCREC\""}, {"orderby", "Date desc"}], :modified_since => "2017-01-01" }
 
-EliXero.CoreApi.Invoices.filter client, filter
+XeroXero.CoreApi.Invoices.filter client, filter
 ```
 
 You do not need to supply both :query_filters and :modified_since if you only want to filter by one of them.
@@ -145,11 +145,11 @@ You do not need to supply both :query_filters and :modified_since if you only wa
 
 If [available in Hex](https://hex.pm/docs/publish), the package can be installed as:
 
-  1. Add `elixero` to your list of dependencies in `mix.exs`:
+  1. Add `xeroxero` to your list of dependencies in `mix.exs`:
 
     ```elixir
     def deps do
-      [{:elixero, "~> 0.1.0"}]
+      [{:xeroxero, "~> 0.1.0"}]
     end
     ```
 
@@ -157,7 +157,6 @@ If [available in Hex](https://hex.pm/docs/publish), the package can be installed
 
     ```elixir
     def application do
-      [applications: [:elixero]]
+      [applications: [:xeroxero]]
     end
     ```
-

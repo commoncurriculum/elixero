@@ -21,3 +21,5 @@ erl_crash.dump
 
 # The others
 mix.lock
+# ExUnit @tag :tmp_dir
+/tmp

@@ -1,25 +1,28 @@
-defmodule EliXero.Mixfile do
+defmodule XeroXero.Mixfile do
   use Mix.Project
 
   def project do
-    [app: :elixero,
-     version: "0.1.1",
-     elixir: "~> 1.3",
+    [app: :xeroxero,
+     version: "0.8.0",
+     elixir: "~> 1.15",
      description: description(),
      package: package(),
      deps: deps()]
   end
 
   def application do
-    [applications: [:logger, :httpoison]]
+    [
+      extra_applications: [:logger]
+    ]
   end
 
   defp deps do
     [
-      {:httpoison, "~> 0.9"},
+      {:jason, "~> 1.1"},
+      {:req, "~> 0.7"},
+      {:bypass, "~> 2.1", only: :test},
       {:ex_doc, ">= 0.0.0", only: :dev},
-      {:poison, "~> 3.0"},
-      {:ecto, "~> 2.1"}
+      {:ecto, "~> 2.1 or ~> 3.0"}
     ]
   end
 
@@ -33,7 +36,7 @@ defmodule EliXero.Mixfile do
     [
       maintainers: ["MJMortimer"],
       licenses: ["MIT"],
-      links: %{"Github" => "https://github.com/MJMortimer/elixero"}
+      links: %{"Github" => "https://github.com/handdii/elixero"}
     ]
   end
 end
