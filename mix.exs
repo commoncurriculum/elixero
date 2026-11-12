@@ -2,14 +2,12 @@ defmodule XeroXero.Mixfile do
   use Mix.Project
 
   def project do
-    [
-      app: :xeroxero,
-      version: "0.7.1",
-      elixir: "~> 1.10",
-      description: description(),
-      package: package(),
-      deps: deps()
-    ]
+    [app: :xeroxero,
+     version: "0.8.0",
+     elixir: "~> 1.15",
+     description: description(),
+     package: package(),
+     deps: deps()]
   end
 
   def application do
@@ -21,7 +19,7 @@ defmodule XeroXero.Mixfile do
   defp deps do
     [
       {:jason, "~> 1.1"},
-      {:req, "~> 0.5"},
+      {:req, "~> 0.7"},
       {:bypass, "~> 2.1", only: :test},
       {:ex_doc, ">= 0.0.0", only: :dev},
       {:ecto, "~> 2.1 or ~> 3.0"}

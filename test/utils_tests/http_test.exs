@@ -6,9 +6,11 @@ defmodule HttpTest do
     {:ok, bypass: bypass, url: "http://localhost:#{bypass.port}"}
   end
 
+  @tag :tmp_dir
   test "requests carry their headers and bodies, and responses keep their raw body", %{
     bypass: bypass,
-    url: url
+    url: url,
+    tmp_dir: tmp_dir
   } do
     Bypass.expect(bypass, fn conn ->
       {:ok, body, conn} = Plug.Conn.read_body(conn)
@@ -40,7 +42,7 @@ defmodule HttpTest do
 
     assert %{status: 200} = XeroXero.Utils.Http.delete(url <> "/invoices/1", headers)
 
-    path = Path.join(System.tmp_dir!(), "xeroxero_http_test.txt")
+    path = Path.join(tmp_dir, "file.txt")
     File.write!(path, "file contents")
 
     assert %{status: 200, body: "file contents"} =
@@ -50,10 +52,16 @@ defmodule HttpTest do
              XeroXero.Utils.Http.post_token(url <> "/token", headers, "grant_type=refresh_token")
   end
 
-  test "a multipart upload names the file and decodes a JSON reply", %{bypass: bypass, url: url} do
+  @tag :tmp_dir
+  test "a multipart upload names the file and decodes a JSON reply", %{
+    bypass: bypass,
+    url: url,
+    tmp_dir: tmp_dir
+  } do
     Bypass.expect_once(bypass, "POST", "/files", fn conn ->
       {:ok, body, conn} = Plug.Conn.read_body(conn)
       assert body =~ ~s(filename="report.pdf")
+      assert body =~ "content-type: application/pdf"
       assert body =~ "pdf bytes"
 
       conn
@@ -61,7 +69,7 @@ defmodule HttpTest do
       |> Plug.Conn.resp(201, ~s({"Id":"f1"}))
     end)
 
-    path = Path.join(System.tmp_dir!(), "xeroxero_upload.pdf")
+    path = Path.join(tmp_dir, "scan.pdf")
     File.write!(path, "pdf bytes")
 
     assert %{"Id" => "f1", "http_status_code" => 201} =
@@ -90,5 +98,15 @@ defmodule HttpTest do
     assert %{ErrorNumber: 4, Message: "bad"} = handle.(400)
     assert %{status_code: 204, message: "No Content"} = handle.(204)
     assert %{status_code: 401, message: %{"oauth_problem" => "token_expired"}} = handle.(401)
+  end
+
+  test "redirects come back to the caller instead of being followed", %{bypass: bypass, url: url} do
+    Bypass.expect_once(bypass, "GET", "/moved", fn conn ->
+      conn
+      |> Plug.Conn.put_resp_header("location", url <> "/elsewhere")
+      |> Plug.Conn.resp(302, "")
+    end)
+
+    assert %{status: 302} = XeroXero.Utils.Http.get(url <> "/moved", [])
   end
 end

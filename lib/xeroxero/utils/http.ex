@@ -27,7 +27,7 @@ defmodule XeroXero.Utils.Http do
     response =
       Req.post!(
         url,
-        [form_multipart: [file: {File.read!(path_to_file), filename: name}]] ++ options(headers)
+        [form_multipart: [file: {File.stream!(path_to_file), filename: name}]] ++ options(headers)
       )
 
     case Req.Response.get_header(response, "content-type") do
@@ -48,6 +48,7 @@ defmodule XeroXero.Utils.Http do
       headers: headers ++ @default_headers,
       receive_timeout: @connection_timeout,
       decode_body: false,
+      redirect: false,
       retry: false
     ]
   end
