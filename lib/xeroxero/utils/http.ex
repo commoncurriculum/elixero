@@ -7,11 +7,19 @@ defmodule XeroXero.Utils.Http do
   end
 
   def put(url, headers, data_map) do
-    Req.put!(url, [body: Jason.encode!(data_map)] ++ options(headers))
+    Req.put!(
+      url,
+      [body: Jason.encode!(data_map)] ++
+        options(headers ++ [{"Content-Type", "application/octet-stream"}])
+    )
   end
 
   def post(url, headers, data_map) do
-    Req.post!(url, [body: Jason.encode!(data_map)] ++ options(headers))
+    Req.post!(
+      url,
+      [body: Jason.encode!(data_map)] ++
+        options(headers ++ [{"Content-Type", "application/octet-stream"}])
+    )
   end
 
   def post_token(url, headers, data_map) do
@@ -27,7 +35,8 @@ defmodule XeroXero.Utils.Http do
     response =
       Req.post!(
         url,
-        [form_multipart: [file: {File.stream!(path_to_file), filename: name}]] ++ options(headers)
+        [form_multipart: [file: {File.stream!(path_to_file, 65_536), filename: name}]] ++
+          options(headers)
       )
 
     case Req.Response.get_header(response, "content-type") do
@@ -40,7 +49,11 @@ defmodule XeroXero.Utils.Http do
   end
 
   def post_file(url, headers, path_to_file) do
-    Req.post!(url, [body: File.read!(path_to_file)] ++ options(headers))
+    Req.post!(
+      url,
+      [body: File.read!(path_to_file)] ++
+        options(headers ++ [{"Content-Type", MIME.from_path(path_to_file)}])
+    )
   end
 
   defp options(headers) do
