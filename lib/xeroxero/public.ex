@@ -8,7 +8,7 @@ defmodule XeroXero.Public do
     header = XeroXero.Utils.Oauth.create_auth_header("GET", request_token_url, [oauth_callback: callback_url], nil)
     response = XeroXero.Utils.Http.get(request_token_url, header)
 
-    resp = %{"http_status_code" => response.status_code}
+    resp = %{"http_status_code" => response.status}
     URI.decode_query(response.body) |> Map.merge(resp)
   end
 
@@ -17,7 +17,7 @@ defmodule XeroXero.Public do
     header = XeroXero.Utils.Oauth.create_auth_header("GET", access_token_url, [oauth_token: request_token["oauth_token"], oauth_verifier: verifier], request_token)
     response = XeroXero.Utils.Http.get(access_token_url, header)
 
-    resp = %{"http_status_code" => response.status_code}
+    resp = %{"http_status_code" => response.status}
     URI.decode_query(response.body) |> Map.merge(resp)
   end
 

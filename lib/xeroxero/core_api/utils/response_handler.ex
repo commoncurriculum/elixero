@@ -1,11 +1,11 @@
 defmodule XeroXero.CoreApi.Utils.ResponseHandler do
     def handle_response(response, expected_model) do
         case response do
-            %{:status_code => 200}  -> transform response.body, expected_model, :ok
-            %{:status_code => 204}  -> %{:status_code => 204, :message => "No Content"}
-            %{:status_code => 400}  -> transform response.body, expected_model, :bad_request
-            %{:status_code => 500}  -> transform_to_api_exception response.body
-            _                       -> %{:status_code => response.status_code, :message => URI.decode_query(response.body)}
+            %{:status => 200}  -> transform response.body, expected_model, :ok
+            %{:status => 204}  -> %{:status_code => 204, :message => "No Content"}
+            %{:status => 400}  -> transform response.body, expected_model, :bad_request
+            %{:status => 500}  -> transform_to_api_exception response.body
+            _                  -> %{:status_code => response.status, :message => URI.decode_query(response.body)}
         end
     end
 

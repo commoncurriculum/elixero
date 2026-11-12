@@ -14,7 +14,7 @@ defmodule XeroXero.CoreApi.Attachments do
     resource = endpoint <> "/" <> identifier <> "/" <> @resource <> "/" <> filename
 
     response = XeroXero.CoreApi.Common.find(client, resource)
-    %{"data" => response.body, "http_status_code" => response.status_code}
+    %{"data" => response.body, "http_status_code" => response.status}
   end
 
   def upload_attachment(client, endpoint, identifier, filename, file_path, include_online) do
