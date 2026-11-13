@@ -2,127 +2,30 @@
 
 ## Usage instructions
 
-In order to use this SDK, you will need to have created an application in the [developer portal](https://app.xero.com).
-Once you've created your application you'll a config section that stores your consumer key and secret as well as signing certificate information if applicable, as well as some other details.
-
-As the config section will hold sensitive data, it's recommended that you create a seperate config file which is not stored in version control, and then import the new config file into your applications overall config file.
-The config section will need to look something like this:
+XeroXero calls the Xero API with an OAuth 2.0 access token. Create an app in the [Xero developer portal](https://developer.xero.com/app/manage) and configure its client id and secret:
 
 ```
 config :xeroxero,
-  private_key_path: "path_to_signing_certificate",
-  consumer_key: "your_applications_consumer_key",
-  consumer_secret: "your_applications_consumer_secret",
-  callback_url: "callback_url_if_applicable",
-  app_type: :atom_denoting_app_type
+  client_id: "your_client_id",
+  client_secret: "your_client_secret"
 ```
 
-Note:
-* private_key_path is only applicable for private/partner applications. The path should be pointing to the .pem certificate that correlates with the certificate uploaded into the developer portal
-* callback_url is only applicable for public/partner applications and used when authorising a request token to call back into your system after authorization to prevent the user from needing to manually input a verification code. This should be set to "oob" if you are not using a callback url
-* app type should be either :private, :public, or :partner depending on the type of application you have created
+`base_url` (default `"https://api.xero.com/"`) and `token_url` (default `"https://identity.xero.com/connect"`) point the library at another server, such as a test server.
 
-### Private application usage
-
-Private applications are not required to go through the process of acquiring a request token, authorising it, and then swaping it for an access token.
-
-#### Required config variables
-
-* private_key_path - path pointing to the .pem certificate that correlates with the certificate uploaded into the developer portal
-* consumer_key - consumer key found in the overview page of your application in the developer portal
-* consumer_secret - consumer secret found in the overview page of your application in the developer portal
-* app_type - must be :private
-
-Once you have set up your config file you can use your private application like so:
-
-1. Create a client
+1. Exchange a refresh token for an access token
   ```
-  client = XeroXero.create_client
+  token = XeroXero.CoreApi.Tokens.refresh_token(refresh_token, client_id, client_secret)
   ```
 
-2. Use the client when calling the Xero API
+2. Create a client for the organisation (tenant) you're calling
+  ```
+  client = %{XeroXero.create_client(token) | xero_tenant_id: "your_tenant_id"}
+  ```
+
+3. Use the client when calling the Xero API
   ```
   XeroXero.CoreApi.Invoices.find client
   ```
-
-It's that easy.
-
-### Public application usage
-
-Public applications must be authorised for use against a user's organisation and must follow the oauth flow of acquiring a request token, having the request token authorised for an organisation, and swapping the request token for an access token. The access token must then be used with all API calls
-
-#### Required config variables
-
-* consumer_key - consumer key found in the overview page of your application in the developer portal
-* consumer_secret - consumer secret found in the overview page of your application in the developer portal
-* callback_url - "oob" if not using a callback url otherwise set to the url you want to be called back into after the user autorises the connection for an organisation
-* app_type - must be :public
-
-Once you have set up your config file you can use your public application like so:
-
-1. Acquire a request token
-  ```
-  request_token = XeroXero.get_request_token
-  ```
-
-2. Authorise the request token via user interaction
-
-  The request token map will contain an auth_url key. The value for this key is the URL that you should direct the user to so that they can authorise your app to access an organisation.
-
-3. Create a client
-
-Once the user has authorised the connection to an organisation and you have retrieved the verification code either from the user themself or the request back into your callback url, do the following:
-  ```
-  client = XeroXero.create_client request_token, "VERIFICATION CODE"
-  ```
-
-4. Use the client when calling the Xero API
-  ```
-  XeroXero.CoreApi.Invoices.find client
-  ```
-
-### Partner application usage
-
-Partner applications are like a hybrid of both private and public applications. Partner applications use signing certificates like private applications but also require the same oauth process as public applications to recieve access tokens. Partner applications can also renew their access tokens after they expire preventing the user from needing to re-authorise the connection after 30 mins of usage.
-
-#### Required config variables
-
-* private_key_path - path pointing to the .pem certificate that correlates with the certificate uploaded into the developer portal
-* consumer_key - consumer key found in the overview page of your application in the developer portal
-* consumer_secret - consumer secret found in the overview page of your application in the developer portal
-* callback_url - "oob" if not using a callback url otherwise set to the url you want to be called back into after the user autorises the connection for an organisation
-* app_type - must be :partner
-
-Once you have set up your config file you can use your partner application like so:
-
-1. Acquire a request token
-  ```
-  request_token = XeroXero.get_request_token
-  ```
-
-2. Authorise the request token via user interaction
-
-  The request token map will contain an auth_url key. The value for this key is the URL that you should direct the user to so that they can authorise your app to access an organisation.
-
-3. Create a client
-
-Once the user has authorised the connection to an organisation and you have retrieved the verification code either from the user themself or the request back into your callback url, do the following:
-  ```
-  client = XeroXero.create_client request_token, "VERIFICATION CODE"
-  ```
-
-4. Use the client when calling the Xero API
-  ```
-  XeroXero.CoreApi.Invoices.find client
-  ```
-
-After your access token has expired, partner applications can renew them without the need for user input via authorisation.
-Given your existing access token is in a variable named access_token, this can be done like so:
-```
-renewed_client = XeroXero.renew_client client
-```
-
-Note: Renewing a client renews the underlying access token. The original client cannot be used after renewing it.
 
 ## Use of filter functions
 
@@ -149,7 +52,7 @@ If [available in Hex](https://hex.pm/docs/publish), the package can be installed
 
     ```elixir
     def deps do
-      [{:xeroxero, "~> 0.1.0"}]
+      [{:xeroxero, github: "commoncurriculum/elixero"}]
     end
     ```
 

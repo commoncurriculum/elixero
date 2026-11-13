@@ -43,16 +43,14 @@ defmodule CoreApiTest do
     url = "http://localhost:#{bypass.port}"
     Application.put_env(:xeroxero, :base_url, url <> "/")
     Application.put_env(:xeroxero, :token_url, url <> "/connect")
-    Application.put_env(:xeroxero, :app_type, :private)
 
     on_exit(fn ->
-      Enum.each([:base_url, :token_url, :app_type], &Application.delete_env(:xeroxero, &1))
+      Enum.each([:base_url, :token_url], &Application.delete_env(:xeroxero, &1))
     end)
 
-    client = %XeroXero.Client{
-      app_type: :private,
-      access_token: "access-token",
-      xero_tenant_id: @tenant_id
+    client = %{
+      XeroXero.create_client(%Models.Tokens.Token{access_token: "access-token"})
+      | xero_tenant_id: @tenant_id
     }
 
     {:ok, bypass: bypass, url: url, client: client}
@@ -259,6 +257,17 @@ defmodule CoreApiTest do
         headers: private_headers([]) ++ [{"if-modified-since", ["2026-11-01T00:00:00"]}],
         reply: model_reply(Models.Invoices),
         expect: expect_model(Models.Invoices)
+      },
+      %{
+        name: "Contacts.filter with only modified_since",
+        call: fn -> CoreApi.Contacts.filter(client, %{modified_since: "2026-11-01T00:00:00"}) end,
+        method: "GET",
+        path: api("contacts"),
+        query: "",
+        body: "",
+        headers: private_headers([]) ++ [{"if-modified-since", ["2026-11-01T00:00:00"]}],
+        reply: model_reply(Models.Contacts),
+        expect: expect_model(Models.Contacts)
       },
       %{
         name: "ContactGroups.add_to_group",

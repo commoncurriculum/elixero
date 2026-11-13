@@ -6,20 +6,8 @@ defmodule XeroXero.Utils.Urls do
   @files_api "files.xro/1.0/"
   @assets_api "assets.xro/1.0/"
 
-  def request_token do
-    base_url() <> "oauth/RequestToken"
-  end
-
   def token_url(resource) do
     Application.get_env(:xeroxero, :token_url, "https://identity.xero.com/connect") <> resource
-  end
-
-  def authorise(oauth_token) do
-    base_url() <> "oauth/Authorize?oauth_token=" <> oauth_token
-  end
-
-  def access_token do
-    base_url() <> "oauth/AccessToken"
   end
 
   def api(resource, api_type) do
@@ -33,6 +21,8 @@ defmodule XeroXero.Utils.Urls do
 
     base_url() <> api <> resource
   end
+
+  def append_query_filters(url, nil), do: url
 
   def append_query_filters(url, query_filters) do
     query_param_string = Enum.map_join query_filters, "&", fn({key, value}) ->

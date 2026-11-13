@@ -32,33 +32,21 @@ defmodule XeroXero.CoreApi.ContactGroups do
   def add_to_group(client, identifier, contacts_map) do
     resource = @resource <> "/" <> identifier <> "/contacts"
 
-    case client.app_type do
-      :private -> XeroXero.Private.create(client, resource, @api_type, contacts_map)
-      :public -> XeroXero.Public.create(client.access_token, resource, @api_type, contacts_map)
-      :partner -> XeroXero.Partner.create(client.access_token, resource, @api_type, contacts_map)
-    end
+    XeroXero.Private.create(client, resource, @api_type, contacts_map)
     |> XeroXero.CoreApi.Utils.ResponseHandler.handle_response(@contacts_model_module)
   end
 
   def remove_contact(client, contact_group_identifier, contact_identifier) do
     resource = @resource <> "/" <> contact_group_identifier <> "/contacts/" <> contact_identifier
 
-    case client.app_type do
-      :private -> XeroXero.Private.delete(client, resource, @api_type)
-      :public -> XeroXero.Public.delete(client.access_token, resource, @api_type)
-      :partner -> XeroXero.Partner.delete(client.access_token, resource, @api_type)
-    end
+    XeroXero.Private.delete(client, resource, @api_type)
     |> XeroXero.CoreApi.Utils.ResponseHandler.handle_response(@model_module)
   end
 
   def remove_all_contacts(client, identifier) do
     resource = @resource <> "/" <> identifier <> "/contacts"
 
-    case client.app_type do
-      :private -> XeroXero.Private.delete(client, resource, @api_type)
-      :public -> XeroXero.Public.delete(client.access_token, resource, @api_type)
-      :partner -> XeroXero.Partner.delete(client.access_token, resource, @api_type)
-    end
+    XeroXero.Private.delete(client, resource, @api_type)
     |> XeroXero.CoreApi.Utils.ResponseHandler.handle_response(@model_module)
   end
 end
