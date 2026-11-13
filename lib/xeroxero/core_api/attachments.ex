@@ -20,11 +20,7 @@ defmodule XeroXero.CoreApi.Attachments do
   def upload_attachment(client, endpoint, identifier, filename, file_path, include_online) do
     resource = endpoint <> "/" <> identifier <> "/" <> @resource
 
-    case client.app_type do
-      :private -> XeroXero.Private.upload_attachment(client, resource, @api_type, file_path, filename, include_online)
-      :public -> XeroXero.Public.upload_attachment(client.access_token, resource, @api_type, file_path, filename, include_online)
-      :partner -> XeroXero.Partner.upload_attachment(client.access_token, resource, @api_type, file_path, filename, include_online)
-    end |> XeroXero.CoreApi.Utils.ResponseHandler.handle_response(@model_module)
-
+    XeroXero.Private.upload_attachment(client, resource, @api_type, file_path, filename, include_online)
+    |> XeroXero.CoreApi.Utils.ResponseHandler.handle_response(@model_module)
   end
 end

@@ -3,7 +3,7 @@ defmodule XeroXero.Mixfile do
 
   def project do
     [app: :xeroxero,
-     version: "0.8.0",
+     version: "0.9.0",
      elixir: "~> 1.16",
      description: description(),
      package: package(),

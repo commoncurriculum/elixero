@@ -37,33 +37,21 @@ defmodule XeroXero.CoreApi.TrackingCategories do
   def add_option(client, identifier, options_map) do
     resource = @resource <> "/" <> identifier <> "/options"
 
-    case client.app_type do
-      :private -> XeroXero.Private.create(client, resource, @api_type, options_map)
-      :public -> XeroXero.Public.create(client.access_token, resource, @api_type, options_map)
-      :partner -> XeroXero.Partner.create(client.access_token, resource, @api_type, options_map)
-    end
+    XeroXero.Private.create(client, resource, @api_type, options_map)
     |> XeroXero.CoreApi.Utils.ResponseHandler.handle_response(@options_model_module)
   end
 
   def update_option(client, category_identifier, option_identifier, options_map) do
     resource = @resource <> "/" <> category_identifier <> "/options/" <> option_identifier
 
-    case client.app_type do
-      :private -> XeroXero.Private.update(client, resource, @api_type, options_map)
-      :public -> XeroXero.Public.update(client.access_token, resource, @api_type, options_map)
-      :partner -> XeroXero.Partner.update(client.access_token, resource, @api_type, options_map)
-    end
+    XeroXero.Private.update(client, resource, @api_type, options_map)
     |> XeroXero.CoreApi.Utils.ResponseHandler.handle_response(@options_model_module)
   end
 
   def delete_option(client, category_identifier, option_identifier) do
     resource = @resource <> "/" <> category_identifier <> "/options/" <> option_identifier
 
-    case client.app_type do
-      :private -> XeroXero.Private.delete(client, resource, @api_type)
-      :public -> XeroXero.Public.delete(client.access_token, resource, @api_type)
-      :partner -> XeroXero.Partner.delete(client.access_token, resource, @api_type)
-    end
+    XeroXero.Private.delete(client, resource, @api_type)
     |> XeroXero.CoreApi.Utils.ResponseHandler.handle_response(@options_model_module)
   end
 end

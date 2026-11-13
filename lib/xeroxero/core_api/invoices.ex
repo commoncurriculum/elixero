@@ -37,11 +37,7 @@ defmodule XeroXero.CoreApi.Invoices do
   def online_invoice_url(client, identifier) do
     resource = @resource <> "/" <> identifier <> "/OnlineInvoice"
 
-    case client.app_type do
-      :private -> XeroXero.Private.find(client, resource, @api_type)
-      :public -> XeroXero.Public.find(client, resource, @api_type)
-      :partner -> XeroXero.Partner.find(client, resource, @api_type)
-    end
+    XeroXero.Private.find(client, resource, @api_type)
     |> XeroXero.CoreApi.Utils.ResponseHandler.handle_response(@online_invoices_model_module)
   end
 end
