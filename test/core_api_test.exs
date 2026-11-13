@@ -692,4 +692,199 @@ defmodule CoreApiTest do
 
     assert raised == :raised
   end
+
+  defp field_value(:string, field), do: {"#{field} value ☕", "#{field} value ☕"}
+  defp field_value(:integer, _field), do: {7, 7}
+  defp field_value(:decimal, _field), do: {1250.55, Decimal.new("1250.55")}
+  defp field_value(:boolean, _field), do: {true, true}
+
+  defp field_value(Ecto.UUID, _field),
+    do: {"0032a5a7-1a8c-4a0f-a6a2-6b5c3c1d0e11", "0032a5a7-1a8c-4a0f-a6a2-6b5c3c1d0e11"}
+
+  defp field_value({:array, :string}, field), do: {["#{field} value"], ["#{field} value"]}
+
+  defp full_record(model, depth) do
+    embeds = if depth == 0, do: [], else: model.__schema__(:embeds)
+
+    fields =
+      Enum.map(model.__schema__(:fields) -- [:id | model.__schema__(:embeds)], fn field ->
+        {field, field_value(model.__schema__(:type, field), field)}
+      end)
+
+    nested =
+      Enum.map(embeds, fn field ->
+        %{cardinality: cardinality, related: related} = model.__schema__(:embed, field)
+        {json, expected} = full_record(related, depth - 1)
+        if cardinality == :one, do: {field, {json, expected}}, else: {field, {[json], [expected]}}
+      end)
+
+    {Map.new(fields ++ nested, fn {field, {json, _}} -> {field, json} end),
+     Map.new(fields ++ nested, fn {field, {_, expected}} -> {field, expected} end)}
+  end
+
+  defp missing_fields(model, expected, actual, path) do
+    Enum.flat_map(expected, fn {field, value} ->
+      got = Map.get(actual, field)
+
+      case model.__schema__(:embed, field) do
+        %{cardinality: :one, related: related} when is_map(got) ->
+          missing_fields(related, value, got, "#{path}.#{field}")
+
+        %{cardinality: :many, related: related} when is_list(got) and length(got) == 1 ->
+          missing_fields(related, hd(value), hd(got), "#{path}.#{field}[0]")
+
+        nil when is_struct(value, Decimal) and is_struct(got, Decimal) ->
+          if Decimal.equal?(value, got), do: [], else: ["#{path}.#{field}: #{inspect(got)}"]
+
+        nil when value == got ->
+          []
+
+        _ ->
+          ["#{path}.#{field}: #{inspect(got)}"]
+      end
+    end)
+  end
+
+  test "every resource returns every field, nested five deep, that Xero sends", %{
+    bypass: bypass,
+    client: client
+  } do
+    cases =
+      Enum.flat_map(@resources, fn {module, resource, ops} ->
+        model = Module.concat(Models, module |> Module.split() |> List.last())
+        key = hd(model.__schema__(:embeds))
+        {json, expected} = full_record(model.__schema__(:embed, key).related, 5)
+        reply = {200, [{"content-type", @json}], Jason.encode!(%{key => [json]})}
+
+        expect = fn result ->
+          assert %{__struct__: ^model} = result
+          assert [record] = Map.fetch!(result, key)
+          assert missing_fields(record.__struct__, expected, record, inspect(module)) == []
+        end
+
+        Enum.flat_map(ops -- [:filter, :delete], fn op ->
+          [%{resource_case(module, resource, op, client) | reply: reply, expect: expect}]
+        end)
+      end)
+
+    run_cases(bypass, cases)
+  end
+
+  test "a validation error on any create or update returns the records with their errors", %{
+    bypass: bypass,
+    client: client
+  } do
+    cases =
+      Enum.flat_map(@resources, fn {module, resource, ops} ->
+        model = Module.concat(Models, module |> Module.split() |> List.last())
+        key = hd(model.__schema__(:embeds))
+        {json, expected} = full_record(model.__schema__(:embed, key).related, 5)
+
+        reply =
+          {400, [{"content-type", @json}],
+           Jason.encode!(%{
+             ErrorNumber: 10,
+             Type: "ValidationException",
+             Message: "A validation exception occurred",
+             Elements: [json]
+           })}
+
+        expect = fn result ->
+          assert %{__struct__: ^model} = result
+          assert [record] = Map.fetch!(result, key)
+          assert missing_fields(record.__struct__, expected, record, inspect(module)) == []
+        end
+
+        ops
+        |> Enum.filter(&(&1 in [:create, :update]))
+        |> Enum.map(
+          &%{resource_case(module, resource, &1, client) | reply: reply, expect: expect}
+        )
+      end)
+
+    run_cases(bypass, cases)
+  end
+
+  @tag :tmp_dir
+  test "filters and file names are encoded the way Xero reads them", %{
+    bypass: bypass,
+    client: client,
+    tmp_dir: tmp_dir
+  } do
+    path = Path.join(tmp_dir, "scan.pdf")
+    File.write!(path, "pdf bytes")
+
+    filter_case = fn name, filter, query, extra_headers ->
+      %{
+        name: name,
+        call: fn -> CoreApi.Contacts.filter(client, filter) end,
+        method: "GET",
+        path: api("contacts"),
+        query: query,
+        body: "",
+        headers: private_headers([]) ++ extra_headers,
+        reply: model_reply(Models.Contacts),
+        expect: expect_model(Models.Contacts)
+      }
+    end
+
+    upload_case = fn name, filename, include_online, encoded_path, query ->
+      %{
+        name: name,
+        call: fn ->
+          CoreApi.Attachments.upload_attachment(
+            client,
+            "invoices",
+            "id-1",
+            filename,
+            path,
+            include_online
+          )
+        end,
+        method: "POST",
+        path: api("invoices/id-1/attachments/" <> encoded_path),
+        query: query,
+        body: "pdf bytes",
+        headers: private_headers(["application/pdf"]),
+        reply: model_reply(Models.Attachments),
+        expect: expect_model(Models.Attachments)
+      }
+    end
+
+    cases = [
+      filter_case.("no filter", %{}, "", [{"if-modified-since", []}]),
+      filter_case.("no query filters", %{query_filters: []}, "", [{"if-modified-since", []}]),
+      filter_case.(
+        "reserved and non-ASCII characters",
+        %{query_filters: [{"where", ~s(Name=="Café & Co + 1/2?")}]},
+        "where=Name%3D%3D%22Caf%C3%A9%20%26%20Co%20%2B%201%2F2%3F%22",
+        [{"if-modified-since", []}]
+      ),
+      filter_case.(
+        "several query filters and modified_since",
+        %{
+          query_filters: [{"where", ~s(Status=="ACTIVE")}, {"order", "Name DESC"}, {"page", "2"}],
+          modified_since: "2026-11-01T00:00:00"
+        },
+        "where=Status%3D%3D%22ACTIVE%22&order=Name%20DESC&page=2",
+        [{"if-modified-since", ["2026-11-01T00:00:00"]}]
+      ),
+      upload_case.(
+        "plain file name, not online",
+        "scan.pdf",
+        false,
+        "scan.pdf",
+        "includeonline=false"
+      ),
+      upload_case.(
+        "file name with reserved and non-ASCII characters",
+        "Café report #1 & 2+3.pdf",
+        true,
+        "Caf%C3%A9%20report%20%231%20%26%202%2B3.pdf",
+        "includeonline=true"
+      )
+    ]
+
+    run_cases(bypass, cases)
+  end
 end
