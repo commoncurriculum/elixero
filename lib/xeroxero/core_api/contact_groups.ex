@@ -44,7 +44,7 @@ defmodule XeroXero.CoreApi.ContactGroups do
     resource = @resource <> "/" <> contact_group_identifier <> "/contacts/" <> contact_identifier
 
     case client.app_type do
-      :private -> XeroXero.Private.delete(client.access_token, resource, @api_type)
+      :private -> XeroXero.Private.delete(client, resource, @api_type)
       :public -> XeroXero.Public.delete(client.access_token, resource, @api_type)
       :partner -> XeroXero.Partner.delete(client.access_token, resource, @api_type)
     end
@@ -55,7 +55,7 @@ defmodule XeroXero.CoreApi.ContactGroups do
     resource = @resource <> "/" <> identifier <> "/contacts"
 
     case client.app_type do
-      :private -> XeroXero.Private.delete(client.access_token, resource, @api_type)
+      :private -> XeroXero.Private.delete(client, resource, @api_type)
       :public -> XeroXero.Public.delete(client.access_token, resource, @api_type)
       :partner -> XeroXero.Partner.delete(client.access_token, resource, @api_type)
     end

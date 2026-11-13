@@ -21,7 +21,7 @@ defmodule XeroXero.CoreApi.Attachments do
     resource = endpoint <> "/" <> identifier <> "/" <> @resource
 
     case client.app_type do
-      :private -> XeroXero.Private.upload_attachment(client.access_token, resource, @api_type, file_path, filename, include_online)
+      :private -> XeroXero.Private.upload_attachment(client, resource, @api_type, file_path, filename, include_online)
       :public -> XeroXero.Public.upload_attachment(client.access_token, resource, @api_type, file_path, filename, include_online)
       :partner -> XeroXero.Partner.upload_attachment(client.access_token, resource, @api_type, file_path, filename, include_online)
     end |> XeroXero.CoreApi.Utils.ResponseHandler.handle_response(@model_module)
