@@ -1,12 +1,5 @@
 defmodule XeroXero.Utils.Urls do
 
-  #urls
-  @base_url "https://api.xero.com/"
-  @token_url "https://identity.xero.com/connect"
-  @request_token_url @base_url <> "oauth/RequestToken"
-  @access_token_url @base_url <> "oauth/AccessToken"
-  @authorise_url @base_url <> "oauth/Authorize"
-
   #api_types
   @core_api "api.xro/2.0/"
   @payroll_api "payroll.xro/1.0/"
@@ -14,19 +7,19 @@ defmodule XeroXero.Utils.Urls do
   @assets_api "assets.xro/1.0/"
 
   def request_token do
-    @request_token_url
+    base_url() <> "oauth/RequestToken"
   end
 
   def token_url(resource) do
-    @token_url <> resource
+    Application.get_env(:xeroxero, :token_url, "https://identity.xero.com/connect") <> resource
   end
 
   def authorise(oauth_token) do
-    @authorise_url <> "?oauth_token=" <> oauth_token
+    base_url() <> "oauth/Authorize?oauth_token=" <> oauth_token
   end
 
   def access_token do
-    @access_token_url
+    base_url() <> "oauth/AccessToken"
   end
 
   def api(resource, api_type) do
@@ -38,7 +31,7 @@ defmodule XeroXero.Utils.Urls do
         :assets -> @assets_api
       end
 
-    @base_url <> api <> resource
+    base_url() <> api <> resource
   end
 
   def append_query_filters(url, query_filters) do
@@ -51,4 +44,7 @@ defmodule XeroXero.Utils.Urls do
     url <> "?" <> query_param_string
   end
 
+  defp base_url do
+    Application.get_env(:xeroxero, :base_url, "https://api.xero.com/")
+  end
 end
